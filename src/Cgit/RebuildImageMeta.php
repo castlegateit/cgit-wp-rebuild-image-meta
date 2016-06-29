@@ -101,7 +101,8 @@ class RebuildImageMeta
 
         foreach ($images as $image) {
             // Get the file name and path relative to the uploads directory
-            $file_path = get_attached_file($image->ID);
+
+            $file_path = $this->attachmentUriToPath($image->guid);
 
             // Store the result
             $image_result = [
@@ -109,7 +110,7 @@ class RebuildImageMeta
                 'path' => $file_path,
             ];
 
-            if (!empty($file_path) && file_exists($file_path)) {
+            if (file_exists($file_path)) {
                 // Rebuild meta data
                 $this->rebuildImageMeta($image->ID, $file_path);
                 $image_result['result'] = true;
@@ -189,5 +190,19 @@ class RebuildImageMeta
         $upload_dir = wp_upload_dir();
 
         return trim(str_replace($upload_dir['basedir'], '', $path), '/');
+    }
+
+    /**
+     * Take a WordPress attachment URI and returns the path.
+     *
+     * @param string $uri
+     *
+     * @return string
+     */
+    private function attachmentUriToPath($uri)
+    {
+        $upload_dir = wp_upload_dir();
+
+        return str_replace($upload_dir['baseurl'], $upload_dir['basedir'], $uri);
     }
 }
